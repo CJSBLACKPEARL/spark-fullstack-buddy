@@ -55,7 +55,7 @@ const Dashboard = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                IdeaSpark
+                PeakPerform AI
               </h1>
               <p className="text-sm text-muted-foreground">Welcome back, {user.user_metadata?.full_name || user.email}</p>
             </div>

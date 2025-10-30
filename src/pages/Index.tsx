@@ -24,7 +24,7 @@ const Index = () => {
             </div>
           </div>
           <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
-            IdeaSpark
+            PeakPerform AI
           </h1>
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90">
             Balance your fitness, academics, and mental wellness with AI-powered personalized guidance
@@ -50,7 +50,7 @@ const Index = () => {
             Everything You Need in One Place
           </h2>
           <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-            IdeaSpark combines AI-powered tools for health, academics, and wellness to help you achieve your goals
+            PeakPerform AI combines AI-powered tools for health, academics, and wellness to help you achieve your goals
           </p>
           
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -137,7 +137,7 @@ const Index = () => {
         <div className="container mx-auto px-4 text-center max-w-4xl">
           <h2 className="text-4xl font-bold mb-6">Privacy First</h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Your data security is our top priority. IdeaSpark uses end-to-end encryption and multi-factor authentication to keep your personal information safe. We never share your data with third parties.
+            Your data security is our top priority. PeakPerform AI uses end-to-end encryption and multi-factor authentication to keep your personal information safe. We never share your data with third parties.
           </p>
           <Button 
             onClick={() => navigate("/auth")}
