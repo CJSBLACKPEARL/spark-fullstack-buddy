@@ -99,7 +99,7 @@ const Auth = () => {
             </div>
           </div>
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            IdeaSpark
+            PeakPerform AI
           </CardTitle>
           <CardDescription>
             Balance your fitness, academics, and mental wellness
