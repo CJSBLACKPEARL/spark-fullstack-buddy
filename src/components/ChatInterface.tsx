@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import ReactMarkdown from "react-markdown";
+import MarkdownText from "./MarkdownText";
 
 interface Message {
   role: "user" | "assistant";
@@ -207,8 +207,8 @@ const ChatInterface = ({ category, userId }: ChatInterfaceProps) => {
                       : "bg-muted"
                   }`}
                 >
-                  <div className="text-sm prose prose-sm max-w-none dark:prose-invert">
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  <div className="text-sm">
+                    <MarkdownText>{msg.content}</MarkdownText>
                   </div>
                 </div>
               </div>
