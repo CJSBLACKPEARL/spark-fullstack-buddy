@@ -5,9 +5,10 @@ import { User, Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dumbbell, GraduationCap, Heart, Sparkles, LogOut } from "lucide-react";
+import { Dumbbell, GraduationCap, Heart, Sparkles, LogOut, History } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ChatInterface from "@/components/ChatInterface";
+import ConversationHistory from "@/components/ConversationHistory";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [activeCategory, setActiveCategory] = useState<"health" | "academic" | "wellness" | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -60,13 +62,23 @@ const Dashboard = () => {
               <p className="text-sm text-muted-foreground">Welcome back, {user.user_metadata?.full_name || user.email}</p>
             </div>
           </div>
-          <Button onClick={handleSignOut} variant="outline" size="sm">
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => setShowHistory(!showHistory)} variant="outline" size="sm">
+              <History className="h-4 w-4 mr-2" />
+              {showHistory ? "Hide History" : "View History"}
+            </Button>
+            <Button onClick={handleSignOut} variant="outline" size="sm">
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
 
-        {!activeCategory ? (
+        {showHistory ? (
+          <div>
+            <ConversationHistory userId={user.id} />
+          </div>
+        ) : !activeCategory ? (
           <div className="grid md:grid-cols-3 gap-6">
             <Card 
               className="cursor-pointer hover:shadow-elegant transition-all border-2 hover:border-primary/50"

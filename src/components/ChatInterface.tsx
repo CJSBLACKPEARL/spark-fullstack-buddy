@@ -22,8 +22,28 @@ const ChatInterface = ({ category, userId }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const initializeConversation = async () => {
+      // Create a new conversation for this session
+      const { data, error } = await supabase
+        .from("chat_conversations")
+        .insert({ user_id: userId, category, title: `${category} session - ${new Date().toLocaleDateString()}` })
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error creating conversation:", error);
+      } else {
+        setConversationId(data.id);
+      }
+    };
+
+    initializeConversation();
+  }, [category, userId]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -144,6 +164,14 @@ const ChatInterface = ({ category, userId }: ChatInterfaceProps) => {
             if (content) updateAssistantMessage(content);
           } catch {}
         }
+      }
+
+      // Save messages to database
+      if (conversationId && assistantMessage) {
+        await supabase.from("chat_messages").insert([
+          { conversation_id: conversationId, user_id: userId, role: "user", content: userMessage },
+          { conversation_id: conversationId, user_id: userId, role: "assistant", content: assistantMessage },
+        ]);
       }
     } catch (error) {
       console.error("Chat error:", error);
