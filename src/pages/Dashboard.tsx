@@ -9,6 +9,7 @@ import { Dumbbell, GraduationCap, Heart, Sparkles, LogOut, History } from "lucid
 import { useToast } from "@/hooks/use-toast";
 import ChatInterface from "@/components/ChatInterface";
 import ConversationHistory from "@/components/ConversationHistory";
+import AcademicHub from "./AcademicHub";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -142,14 +143,20 @@ const Dashboard = () => {
           </div>
         ) : (
           <div>
-            <Button 
-              variant="outline" 
-              onClick={() => setActiveCategory(null)}
-              className="mb-6"
-            >
-              ← Back to Categories
-            </Button>
-            <ChatInterface category={activeCategory} userId={user.id} />
+            {activeCategory === "academic" ? (
+              <AcademicHub user={user} onBack={() => setActiveCategory(null)} />
+            ) : (
+              <>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setActiveCategory(null)}
+                  className="mb-6"
+                >
+                  ← Back to Categories
+                </Button>
+                <ChatInterface category={activeCategory} userId={user.id} />
+              </>
+            )}
           </div>
         )}
       </div>

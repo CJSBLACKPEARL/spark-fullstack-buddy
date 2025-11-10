@@ -73,6 +73,39 @@ export type Database = {
           },
         ]
       }
+      flashcards: {
+        Row: {
+          back: string
+          category: string | null
+          created_at: string
+          front: string
+          id: string
+          source_type: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          back: string
+          category?: string | null
+          created_at?: string
+          front: string
+          id?: string
+          source_type?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          back?: string
+          category?: string | null
+          created_at?: string
+          front?: string
+          id?: string
+          source_type?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -100,6 +133,104 @@ export type Database = {
           role?: string | null
           sport?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      quiz_results: {
+        Row: {
+          answers: Json
+          completed_at: string
+          id: string
+          quiz_id: string
+          score: number
+          total_questions: number
+          user_id: string
+        }
+        Insert: {
+          answers: Json
+          completed_at?: string
+          id?: string
+          quiz_id: string
+          score: number
+          total_questions: number
+          user_id: string
+        }
+        Update: {
+          answers?: Json
+          completed_at?: string
+          id?: string
+          quiz_id?: string
+          score?: number
+          total_questions?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_results_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quizzes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quizzes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          questions: Json
+          source_type: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          questions: Json
+          source_type?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          questions?: Json
+          source_type?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      uploaded_documents: {
+        Row: {
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id: string
+          uploaded_at: string
+          user_id: string
+        }
+        Insert: {
+          file_name: string
+          file_path: string
+          file_size: number
+          file_type: string
+          id?: string
+          uploaded_at?: string
+          user_id: string
+        }
+        Update: {
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          uploaded_at?: string
+          user_id?: string
         }
         Relationships: []
       }
