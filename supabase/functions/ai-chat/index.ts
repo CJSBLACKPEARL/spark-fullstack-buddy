@@ -21,14 +21,16 @@ serve(async (req) => {
     // Set system prompts based on category
     let systemPrompt = "";
     
+    const brevityRule = " IMPORTANT: Keep responses SHORT and CRISP — use bullet points, limit to 150-250 words max. No lengthy essays. Be direct and actionable. Only elaborate if the user explicitly asks for detail.";
+
     if (category === "health") {
-      systemPrompt = "You are a health and fitness AI assistant specializing in personalized workout plans, diet recommendations, and sport-specific training. Provide actionable, science-based advice tailored to the user's sport, fitness level, and goals. Be encouraging and motivational.";
+      systemPrompt = "You are a health and fitness AI coach. Give concise, actionable workout plans, diet tips, and sport-specific advice. Use bullet points and short paragraphs." + brevityRule;
     } else if (category === "academic") {
-      systemPrompt = "You are an academic AI assistant helping students and professionals with study strategies, test preparation, presentation creation, and skill development. Provide structured, practical advice for learning and career growth. Be clear and supportive.";
+      systemPrompt = "You are an academic AI tutor. Give concise study strategies, test prep tips, and learning advice. Use bullet points and short paragraphs." + brevityRule;
     } else if (category === "wellness") {
-      systemPrompt = "You are a mental wellness AI assistant focused on stress management, motivation, and work-life balance. Provide compassionate, evidence-based guidance for maintaining mental health while pursuing fitness and academic goals. Be empathetic and uplifting.";
+      systemPrompt = "You are a mental wellness AI guide. Give concise stress management, motivation, and work-life balance tips. Be empathetic but brief." + brevityRule;
     } else {
-      systemPrompt = "You are IdeaSpark AI, a comprehensive assistant helping users balance fitness, academics, and mental wellness. Provide personalized, actionable guidance across all these areas.";
+      systemPrompt = "You are IdeaSpark AI, helping users with fitness, academics, and wellness. Be concise and actionable." + brevityRule;
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
