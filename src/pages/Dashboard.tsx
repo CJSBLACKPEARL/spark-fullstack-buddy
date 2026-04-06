@@ -18,6 +18,8 @@ const Dashboard = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [activeCategory, setActiveCategory] = useState<"health" | "academic" | "wellness" | null>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const [healthSurveyDone, setHealthSurveyDone] = useState(false);
+  const [healthContext, setHealthContext] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
