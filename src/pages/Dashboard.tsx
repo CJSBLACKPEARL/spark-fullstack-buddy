@@ -4,11 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dumbbell, GraduationCap, Heart, Sparkles, LogOut, History } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ChatInterface from "@/components/ChatInterface";
 import ConversationHistory from "@/components/ConversationHistory";
+import HealthSurvey from "@/components/health/HealthSurvey";
 import AcademicHub from "./AcademicHub";
 
 const Dashboard = () => {
@@ -18,6 +18,8 @@ const Dashboard = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [activeCategory, setActiveCategory] = useState<"health" | "academic" | "wellness" | null>(null);
   const [showHistory, setShowHistory] = useState(false);
+  const [healthSurveyDone, setHealthSurveyDone] = useState(false);
+  const [healthContext, setHealthContext] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -145,16 +147,31 @@ const Dashboard = () => {
           <div>
             {activeCategory === "academic" ? (
               <AcademicHub user={user} onBack={() => setActiveCategory(null)} />
-            ) : (
+            ) : activeCategory === "health" && !healthSurveyDone ? (
               <>
                 <Button 
                   variant="outline" 
-                  onClick={() => setActiveCategory(null)}
+                  onClick={() => { setActiveCategory(null); setHealthSurveyDone(false); setHealthContext(undefined); }}
                   className="mb-6"
                 >
                   ← Back to Categories
                 </Button>
-                <ChatInterface category={activeCategory} userId={user.id} />
+                <HealthSurvey onComplete={(answers) => {
+                  const context = `Here is my health profile:\n- **Goal**: ${answers.goal}\n- **Age**: ${answers.age} years\n- **Weight**: ${answers.weight} kg\n- **Height**: ${answers.height} cm\n- **Activity Level**: ${answers.activity_level}\n- **Medical Conditions**: ${answers.medical_conditions}\n- **Allergies/Dietary Restrictions**: ${answers.allergies}\n- **Diet Preference**: ${answers.diet_preference}\n\nBased on this profile, please create a personalized fitness and nutrition plan for me. Include a weekly workout schedule and a sample meal plan in table format.`;
+                  setHealthContext(context);
+                  setHealthSurveyDone(true);
+                }} />
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="outline" 
+                  onClick={() => { setActiveCategory(null); setHealthSurveyDone(false); setHealthContext(undefined); }}
+                  className="mb-6"
+                >
+                  ← Back to Categories
+                </Button>
+                <ChatInterface category={activeCategory!} userId={user.id} initialContext={healthContext} />
               </>
             )}
           </div>

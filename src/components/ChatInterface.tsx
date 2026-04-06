@@ -16,19 +16,20 @@ interface Message {
 interface ChatInterfaceProps {
   category: "health" | "academic" | "wellness";
   userId: string;
+  initialContext?: string;
 }
 
-const ChatInterface = ({ category, userId }: ChatInterfaceProps) => {
+const ChatInterface = ({ category, userId, initialContext }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [hasAutoSent, setHasAutoSent] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     const initializeConversation = async () => {
-      // Create a new conversation for this session
       const { data, error } = await supabase
         .from("chat_conversations")
         .insert({ user_id: userId, category, title: `${category} session - ${new Date().toLocaleDateString()}` })
@@ -45,24 +46,31 @@ const ChatInterface = ({ category, userId }: ChatInterfaceProps) => {
     initializeConversation();
   }, [category, userId]);
 
+  // Auto-send initial context (health survey answers)
+  useEffect(() => {
+    if (initialContext && conversationId && !hasAutoSent && messages.length === 0 && !isLoading) {
+      setHasAutoSent(true);
+      handleSendMessage(initialContext);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialContext, conversationId, hasAutoSent]);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
-  const sendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+  const handleSendMessage = async (messageText: string) => {
+    if (!messageText.trim() || isLoading) return;
 
-    const userMessage = input.trim();
-    setInput("");
+    const userMessage = messageText.trim();
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     setIsLoading(true);
 
     try {
       const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-chat`;
-      
+
       const response = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
@@ -77,19 +85,11 @@ const ChatInterface = ({ category, userId }: ChatInterfaceProps) => {
 
       if (!response.ok) {
         if (response.status === 429) {
-          toast({
-            title: "Rate limit exceeded",
-            description: "Please wait a moment before sending another message.",
-            variant: "destructive",
-          });
+          toast({ title: "Rate limit exceeded", description: "Please wait a moment before sending another message.", variant: "destructive" });
           return;
         }
         if (response.status === 402) {
-          toast({
-            title: "AI credits exhausted",
-            description: "Please add credits to continue using AI features.",
-            variant: "destructive",
-          });
+          toast({ title: "AI credits exhausted", description: "Please add credits to continue using AI features.", variant: "destructive" });
           return;
         }
         throw new Error("Failed to get response");
@@ -108,7 +108,7 @@ const ChatInterface = ({ category, userId }: ChatInterfaceProps) => {
         setMessages((prev) => {
           const last = prev[prev.length - 1];
           if (last?.role === "assistant") {
-            return prev.map((m, i) => 
+            return prev.map((m, i) =>
               i === prev.length - 1 ? { ...m, content: assistantMessage } : m
             );
           }
@@ -119,9 +119,9 @@ const ChatInterface = ({ category, userId }: ChatInterfaceProps) => {
       while (!streamDone) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         textBuffer += decoder.decode(value, { stream: true });
-        
+
         let newlineIndex: number;
         while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
           let line = textBuffer.slice(0, newlineIndex);
@@ -132,17 +132,12 @@ const ChatInterface = ({ category, userId }: ChatInterfaceProps) => {
           if (!line.startsWith("data: ")) continue;
 
           const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") {
-            streamDone = true;
-            break;
-          }
+          if (jsonStr === "[DONE]") { streamDone = true; break; }
 
           try {
             const parsed = JSON.parse(jsonStr);
             const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-            if (content) {
-              updateAssistantMessage(content);
-            }
+            if (content) updateAssistantMessage(content);
           } catch {
             textBuffer = line + "\n" + textBuffer;
             break;
@@ -166,7 +161,6 @@ const ChatInterface = ({ category, userId }: ChatInterfaceProps) => {
         }
       }
 
-      // Save messages to database
       if (conversationId && assistantMessage) {
         await supabase.from("chat_messages").insert([
           { conversation_id: conversationId, user_id: userId, role: "user", content: userMessage },
@@ -175,36 +169,33 @@ const ChatInterface = ({ category, userId }: ChatInterfaceProps) => {
       }
     } catch (error) {
       console.error("Chat error:", error);
-      toast({
-        title: "Error",
-        description: "Failed to get AI response. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to get AI response. Please try again.", variant: "destructive" });
       setMessages((prev) => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
     }
   };
 
+  const sendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const msg = input.trim();
+    setInput("");
+    await handleSendMessage(msg);
+  };
+
   const getCategoryTitle = () => {
     switch (category) {
-      case "health":
-        return "Health & Fitness Assistant";
-      case "academic":
-        return "Academic Support Assistant";
-      case "wellness":
-        return "Mental Wellness Assistant";
+      case "health": return "Health & Fitness Assistant";
+      case "academic": return "Academic Support Assistant";
+      case "wellness": return "Mental Wellness Assistant";
     }
   };
 
   const getCategoryColor = () => {
     switch (category) {
-      case "health":
-        return "from-primary to-primary-glow";
-      case "academic":
-        return "from-secondary to-accent";
-      case "wellness":
-        return "from-accent to-primary";
+      case "health": return "from-primary to-primary-glow";
+      case "academic": return "from-secondary to-accent";
+      case "wellness": return "from-accent to-primary";
     }
   };
 
@@ -214,9 +205,9 @@ const ChatInterface = ({ category, userId }: ChatInterfaceProps) => {
         <h2 className="text-2xl font-bold">{getCategoryTitle()}</h2>
         <p className="text-sm opacity-90 mt-1">Get personalized AI-powered guidance</p>
       </div>
-      
+
       <ScrollArea className="h-[500px] p-6" ref={scrollRef}>
-        {messages.length === 0 ? (
+        {messages.length === 0 && !isLoading ? (
           <div className="text-center text-muted-foreground py-12">
             <p className="text-lg">Start a conversation to get personalized guidance!</p>
             <p className="text-sm mt-2">Ask me anything about your goals and I'll help you achieve them.</p>
