@@ -16,6 +16,7 @@ interface Message {
 interface ChatInterfaceProps {
   category: "health" | "academic" | "wellness";
   userId: string;
+  initialContext?: string;
 }
 
 const ChatInterface = ({ category, userId }: ChatInterfaceProps) => {
