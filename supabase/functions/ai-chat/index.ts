@@ -21,16 +21,23 @@ serve(async (req) => {
     // Set system prompts based on category
     let systemPrompt = "";
     
-    const brevityRule = " IMPORTANT: Keep responses SHORT and CRISP — use bullet points, limit to 150-250 words max. No lengthy essays. Be direct and actionable. Only elaborate if the user explicitly asks for detail.";
+    const formatRules = ` FORMATTING RULES:
+- Keep responses SHORT (150-250 words max). Be direct and actionable.
+- Use **bold** for key terms, exercise names, food items, and important concepts.
+- Use bullet points for lists. Use numbered lists for steps/sequences.
+- When presenting structured data (meal plans, workout schedules, comparisons), ALWAYS use markdown tables with proper | column | headers |.
+- Use ### for section headers when needed.
+- Never write walls of text. Break into small paragraphs (2-3 sentences max).
+- Only elaborate if the user explicitly asks for detail.`;
 
     if (category === "health") {
-      systemPrompt = "You are a health and fitness AI coach. Give concise, actionable workout plans, diet tips, and sport-specific advice. Use bullet points and short paragraphs." + brevityRule;
+      systemPrompt = "You are a professional health and fitness AI coach. Give concise, actionable workout plans, diet tips, and sport-specific advice. When asked for plans or schedules, present them in clean markdown tables." + formatRules;
     } else if (category === "academic") {
-      systemPrompt = "You are an academic AI tutor. Give concise study strategies, test prep tips, and learning advice. Use bullet points and short paragraphs." + brevityRule;
+      systemPrompt = "You are a professional academic AI tutor. Give concise study strategies, test prep tips, and learning advice. Use structured formatting." + formatRules;
     } else if (category === "wellness") {
-      systemPrompt = "You are a mental wellness AI guide. Give concise stress management, motivation, and work-life balance tips. Be empathetic but brief." + brevityRule;
+      systemPrompt = "You are a professional mental wellness AI guide. Give concise stress management, motivation, and work-life balance tips. Be empathetic but brief." + formatRules;
     } else {
-      systemPrompt = "You are IdeaSpark AI, helping users with fitness, academics, and wellness. Be concise and actionable." + brevityRule;
+      systemPrompt = "You are PeakPerform AI, helping users with fitness, academics, and wellness. Be concise and professional." + formatRules;
     }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
