@@ -4,11 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dumbbell, GraduationCap, Heart, Sparkles, LogOut, History } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ChatInterface from "@/components/ChatInterface";
 import ConversationHistory from "@/components/ConversationHistory";
+import HealthSurvey from "@/components/health/HealthSurvey";
 import AcademicHub from "./AcademicHub";
 
 const Dashboard = () => {
