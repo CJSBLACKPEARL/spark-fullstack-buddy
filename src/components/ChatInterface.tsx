@@ -47,11 +47,27 @@ const ChatInterface = ({ category, userId, initialContext }: ChatInterfaceProps)
     initializeConversation();
   }, [category, userId]);
 
+  // Auto-send initial context (health survey answers)
+  useEffect(() => {
+    if (initialContext && conversationId && !hasAutoSent && messages.length === 0 && !isLoading) {
+      setHasAutoSent(true);
+      sendDirectMessage(initialContext);
+    }
+  }, [initialContext, conversationId, hasAutoSent, messages.length, isLoading]);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const sendDirectMessage = async (text: string) => {
+    if (!text.trim() || isLoading) return;
+    const userMessage = text.trim();
+    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+    setIsLoading(true);
+    await processAIResponse(userMessage, []);
+  };
 
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
