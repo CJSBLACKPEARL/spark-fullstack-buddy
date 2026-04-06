@@ -19,11 +19,12 @@ interface ChatInterfaceProps {
   initialContext?: string;
 }
 
-const ChatInterface = ({ category, userId }: ChatInterfaceProps) => {
+const ChatInterface = ({ category, userId, initialContext }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [hasAutoSent, setHasAutoSent] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
