@@ -4,8 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dumbbell, GraduationCap, Heart, MessageSquare } from "lucide-react";
+import { Dumbbell, GraduationCap, Heart, MessageSquare, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import ChatHistoryViewer from "./ChatHistoryViewer";
 
 interface Conversation {
   id: string;
@@ -22,6 +24,7 @@ interface ConversationHistoryProps {
 const ConversationHistory = ({ userId }: ConversationHistoryProps) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
 
   useEffect(() => {
     const fetchConversations = async () => {
@@ -37,14 +40,12 @@ const ConversationHistory = ({ userId }: ConversationHistoryProps) => {
         return;
       }
 
-      // Get message counts for each conversation
       const conversationsWithCounts = await Promise.all(
         (convData || []).map(async (conv) => {
           const { count } = await supabase
             .from("chat_messages")
             .select("*", { count: "exact", head: true })
             .eq("conversation_id", conv.id);
-
           return { ...conv, messageCount: count || 0 };
         })
       );
@@ -58,42 +59,51 @@ const ConversationHistory = ({ userId }: ConversationHistoryProps) => {
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case "health":
-        return <Dumbbell className="h-4 w-4" />;
-      case "academic":
-        return <GraduationCap className="h-4 w-4" />;
-      case "wellness":
-        return <Heart className="h-4 w-4" />;
-      default:
-        return <MessageSquare className="h-4 w-4" />;
+      case "health": return <Dumbbell className="h-4 w-4" />;
+      case "academic": return <GraduationCap className="h-4 w-4" />;
+      case "wellness": return <Heart className="h-4 w-4" />;
+      default: return <MessageSquare className="h-4 w-4" />;
     }
   };
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case "health":
-        return "bg-primary/10 text-primary";
-      case "academic":
-        return "bg-secondary/10 text-secondary";
-      case "wellness":
-        return "bg-accent/10 text-accent";
-      default:
-        return "bg-muted";
+      case "health": return "bg-primary/10 text-primary";
+      case "academic": return "bg-secondary/10 text-secondary";
+      case "wellness": return "bg-accent/10 text-accent";
+      default: return "bg-muted";
     }
   };
 
-  const filterByCategory = (category: string) => {
-    return conversations.filter((conv) => conv.category === category);
+  const getCategoryGradient = (category: string) => {
+    switch (category) {
+      case "health": return "from-primary to-primary-glow";
+      case "academic": return "from-secondary to-accent";
+      case "wellness": return "from-accent to-primary";
+      default: return "from-primary to-secondary";
+    }
   };
+
+  const filterByCategory = (category: string) => conversations.filter((c) => c.category === category);
 
   const getCategoryStats = (category: string) => {
     const filtered = filterByCategory(category);
-    const totalMessages = filtered.reduce((sum, conv) => sum + (conv.messageCount || 0), 0);
     return {
       sessions: filtered.length,
-      messages: totalMessages,
+      messages: filtered.reduce((sum, c) => sum + (c.messageCount || 0), 0),
     };
   };
+
+  if (selectedConversation) {
+    return (
+      <ChatHistoryViewer
+        conversationId={selectedConversation.id}
+        conversationTitle={selectedConversation.title || "Untitled"}
+        categoryColor={getCategoryGradient(selectedConversation.category)}
+        onBack={() => setSelectedConversation(null)}
+      />
+    );
+  }
 
   if (isLoading) {
     return (
@@ -105,11 +115,34 @@ const ConversationHistory = ({ userId }: ConversationHistoryProps) => {
     );
   }
 
+  const renderConversationRow = (conv: Conversation, showCategory = false) => (
+    <TableRow key={conv.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedConversation(conv)}>
+      {showCategory && (
+        <TableCell>
+          <Badge className={getCategoryColor(conv.category)}>
+            <span className="flex items-center gap-1">
+              {getCategoryIcon(conv.category)}
+              {conv.category}
+            </span>
+          </Badge>
+        </TableCell>
+      )}
+      <TableCell className="font-medium">{conv.title}</TableCell>
+      <TableCell>{new Date(conv.created_at).toLocaleDateString()}</TableCell>
+      <TableCell className="text-right">{conv.messageCount || 0}</TableCell>
+      <TableCell className="text-right">
+        <Button variant="ghost" size="sm" className="text-primary">
+          <Eye className="h-4 w-4" />
+        </Button>
+      </TableCell>
+    </TableRow>
+  );
+
   return (
     <Card className="shadow-elegant">
       <CardHeader>
         <CardTitle className="text-2xl">Your Conversation History</CardTitle>
-        <CardDescription>Track your progress across all categories</CardDescription>
+        <CardDescription>Click any session to view the full conversation</CardDescription>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="all" className="w-full">
@@ -122,44 +155,24 @@ const ConversationHistory = ({ userId }: ConversationHistoryProps) => {
 
           <TabsContent value="all" className="mt-6">
             <div className="grid md:grid-cols-3 gap-4 mb-6">
-              <Card className="bg-gradient-to-br from-primary/5 to-primary/10">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <Dumbbell className="h-5 w-5 text-primary" />
-                    <CardTitle className="text-lg">Health & Fitness</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-2xl font-bold text-primary">{getCategoryStats("health").sessions}</p>
-                  <p className="text-sm text-muted-foreground">{getCategoryStats("health").messages} messages</p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-secondary/5 to-secondary/10">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <GraduationCap className="h-5 w-5 text-secondary" />
-                    <CardTitle className="text-lg">Academic Support</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-2xl font-bold text-secondary">{getCategoryStats("academic").sessions}</p>
-                  <p className="text-sm text-muted-foreground">{getCategoryStats("academic").messages} messages</p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-gradient-to-br from-accent/5 to-accent/10">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center gap-2">
-                    <Heart className="h-5 w-5 text-accent" />
-                    <CardTitle className="text-lg">Mental Wellness</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-2xl font-bold text-accent">{getCategoryStats("wellness").sessions}</p>
-                  <p className="text-sm text-muted-foreground">{getCategoryStats("wellness").messages} messages</p>
-                </CardContent>
-              </Card>
+              {[
+                { cat: "health", icon: Dumbbell, label: "Health & Fitness", color: "primary" },
+                { cat: "academic", icon: GraduationCap, label: "Academic Support", color: "secondary" },
+                { cat: "wellness", icon: Heart, label: "Mental Wellness", color: "accent" },
+              ].map(({ cat, icon: Icon, label, color }) => (
+                <Card key={cat} className={`bg-gradient-to-br from-${color}/5 to-${color}/10`}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-2">
+                      <Icon className={`h-5 w-5 text-${color}`} />
+                      <CardTitle className="text-lg">{label}</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className={`text-2xl font-bold text-${color}`}>{getCategoryStats(cat).sessions}</p>
+                    <p className="text-sm text-muted-foreground">{getCategoryStats(cat).messages} messages</p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
 
             <ScrollArea className="h-[400px]">
@@ -170,97 +183,35 @@ const ConversationHistory = ({ userId }: ConversationHistoryProps) => {
                     <TableHead>Session</TableHead>
                     <TableHead>Date</TableHead>
                     <TableHead className="text-right">Messages</TableHead>
+                    <TableHead className="text-right">View</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {conversations.map((conv) => (
-                    <TableRow key={conv.id}>
-                      <TableCell>
-                        <Badge className={getCategoryColor(conv.category)}>
-                          <span className="flex items-center gap-1">
-                            {getCategoryIcon(conv.category)}
-                            {conv.category}
-                          </span>
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="font-medium">{conv.title}</TableCell>
-                      <TableCell>{new Date(conv.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell className="text-right">{conv.messageCount || 0}</TableCell>
-                    </TableRow>
-                  ))}
+                  {conversations.map((conv) => renderConversationRow(conv, true))}
                 </TableBody>
               </Table>
             </ScrollArea>
           </TabsContent>
 
-          <TabsContent value="health" className="mt-6">
-            <ScrollArea className="h-[400px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Session</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Messages</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filterByCategory("health").map((conv) => (
-                    <TableRow key={conv.id}>
-                      <TableCell className="font-medium">{conv.title}</TableCell>
-                      <TableCell>{new Date(conv.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell className="text-right">{conv.messageCount || 0}</TableCell>
+          {["health", "academic", "wellness"].map((cat) => (
+            <TabsContent key={cat} value={cat} className="mt-6">
+              <ScrollArea className="h-[400px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Session</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Messages</TableHead>
+                      <TableHead className="text-right">View</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </ScrollArea>
-          </TabsContent>
-
-          <TabsContent value="academic" className="mt-6">
-            <ScrollArea className="h-[400px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Session</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Messages</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filterByCategory("academic").map((conv) => (
-                    <TableRow key={conv.id}>
-                      <TableCell className="font-medium">{conv.title}</TableCell>
-                      <TableCell>{new Date(conv.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell className="text-right">{conv.messageCount || 0}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </ScrollArea>
-          </TabsContent>
-
-          <TabsContent value="wellness" className="mt-6">
-            <ScrollArea className="h-[400px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Session</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Messages</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filterByCategory("wellness").map((conv) => (
-                    <TableRow key={conv.id}>
-                      <TableCell className="font-medium">{conv.title}</TableCell>
-                      <TableCell>{new Date(conv.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell className="text-right">{conv.messageCount || 0}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </ScrollArea>
-          </TabsContent>
+                  </TableHeader>
+                  <TableBody>
+                    {filterByCategory(cat).map((conv) => renderConversationRow(conv))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            </TabsContent>
+          ))}
         </Tabs>
       </CardContent>
     </Card>
