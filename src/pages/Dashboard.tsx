@@ -147,16 +147,31 @@ const Dashboard = () => {
           <div>
             {activeCategory === "academic" ? (
               <AcademicHub user={user} onBack={() => setActiveCategory(null)} />
-            ) : (
+            ) : activeCategory === "health" && !healthSurveyDone ? (
               <>
                 <Button 
                   variant="outline" 
-                  onClick={() => setActiveCategory(null)}
+                  onClick={() => { setActiveCategory(null); setHealthSurveyDone(false); setHealthContext(undefined); }}
                   className="mb-6"
                 >
                   ← Back to Categories
                 </Button>
-                <ChatInterface category={activeCategory} userId={user.id} />
+                <HealthSurvey onComplete={(answers) => {
+                  const context = `Here is my health profile:\n- **Goal**: ${answers.goal}\n- **Age**: ${answers.age} years\n- **Weight**: ${answers.weight} kg\n- **Height**: ${answers.height} cm\n- **Activity Level**: ${answers.activity_level}\n- **Medical Conditions**: ${answers.medical_conditions}\n- **Allergies/Dietary Restrictions**: ${answers.allergies}\n- **Diet Preference**: ${answers.diet_preference}\n\nBased on this profile, please create a personalized fitness and nutrition plan for me. Include a weekly workout schedule and a sample meal plan in table format.`;
+                  setHealthContext(context);
+                  setHealthSurveyDone(true);
+                }} />
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="outline" 
+                  onClick={() => { setActiveCategory(null); setHealthSurveyDone(false); setHealthContext(undefined); }}
+                  className="mb-6"
+                >
+                  ← Back to Categories
+                </Button>
+                <ChatInterface category={activeCategory!} userId={user.id} initialContext={healthContext} />
               </>
             )}
           </div>
