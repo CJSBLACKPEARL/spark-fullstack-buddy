@@ -204,6 +204,33 @@ export type Database = {
         }
         Relationships: []
       }
+      study_notes: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          source_type: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          source_type?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          source_type?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       uploaded_documents: {
         Row: {
           file_name: string
