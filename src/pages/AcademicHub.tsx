@@ -9,6 +9,7 @@ import FlashcardGenerator from "@/components/academic/FlashcardGenerator";
 import QuizGenerator from "@/components/academic/QuizGenerator";
 import DocumentUploader from "@/components/academic/DocumentUploader";
 import AcademicProgress from "@/components/academic/AcademicProgress";
+import StudyNotes from "@/components/academic/StudyNotes";
 import ChatInterface from "@/components/ChatInterface";
 
 interface AcademicHubProps {
@@ -25,10 +26,11 @@ const AcademicHub = ({ user, onBack }: AcademicHubProps) => {
       </Button>
 
       <Tabs defaultValue="chat" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="chat">AI Chat</TabsTrigger>
           <TabsTrigger value="flashcards">Flashcards</TabsTrigger>
           <TabsTrigger value="quizzes">Quizzes</TabsTrigger>
+          <TabsTrigger value="notes">Notes</TabsTrigger>
           <TabsTrigger value="upload">Upload</TabsTrigger>
           <TabsTrigger value="progress">Progress</TabsTrigger>
         </TabsList>
@@ -43,6 +45,10 @@ const AcademicHub = ({ user, onBack }: AcademicHubProps) => {
 
         <TabsContent value="quizzes" className="mt-6">
           <QuizGenerator userId={user.id} />
+        </TabsContent>
+
+        <TabsContent value="notes" className="mt-6">
+          <StudyNotes userId={user.id} />
         </TabsContent>
 
         <TabsContent value="upload" className="mt-6">
