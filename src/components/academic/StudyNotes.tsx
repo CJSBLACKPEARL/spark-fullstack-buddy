@@ -95,7 +95,7 @@ const StudyNotes = ({ userId }: StudyNotesProps) => {
           </CardHeader>
           {expandedId === note.id && (
             <CardContent className="border-t pt-4">
-              <MarkdownText content={note.content} />
+              <MarkdownText>{note.content}</MarkdownText>
             </CardContent>
           )}
         </Card>
