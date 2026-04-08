@@ -113,7 +113,7 @@ const Dashboard = () => {
                 </div>
                 <CardTitle>Academic Support</CardTitle>
                 <CardDescription>
-                  Generate tests, create presentations, build mind maps, and get personalized learning roadmaps
+                  Upload documents to generate flashcards, quizzes & study notes. Chat with AI for academic help and track your progress
                 </CardDescription>
               </CardHeader>
               <CardContent>
