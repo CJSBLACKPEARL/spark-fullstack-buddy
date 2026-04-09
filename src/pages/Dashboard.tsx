@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import ChatInterface from "@/components/ChatInterface";
 import ConversationHistory from "@/components/ConversationHistory";
 import HealthSurvey from "@/components/health/HealthSurvey";
+import WellnessSurvey from "@/components/wellness/WellnessSurvey";
 import AcademicHub from "./AcademicHub";
 
 const Dashboard = () => {
