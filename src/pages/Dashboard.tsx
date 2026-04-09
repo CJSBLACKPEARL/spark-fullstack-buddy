@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import ChatInterface from "@/components/ChatInterface";
 import ConversationHistory from "@/components/ConversationHistory";
 import HealthSurvey from "@/components/health/HealthSurvey";
+import WellnessSurvey from "@/components/wellness/WellnessSurvey";
 import AcademicHub from "./AcademicHub";
 
 const Dashboard = () => {
@@ -20,6 +21,8 @@ const Dashboard = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [healthSurveyDone, setHealthSurveyDone] = useState(false);
   const [healthContext, setHealthContext] = useState<string | undefined>(undefined);
+  const [wellnessSurveyDone, setWellnessSurveyDone] = useState(false);
+  const [wellnessContext, setWellnessContext] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -162,16 +165,35 @@ const Dashboard = () => {
                   setHealthSurveyDone(true);
                 }} />
               </>
-            ) : (
+            ) : activeCategory === "wellness" && !wellnessSurveyDone ? (
               <>
                 <Button 
                   variant="outline" 
-                  onClick={() => { setActiveCategory(null); setHealthSurveyDone(false); setHealthContext(undefined); }}
+                  onClick={() => { setActiveCategory(null); setWellnessSurveyDone(false); setWellnessContext(undefined); }}
                   className="mb-6"
                 >
                   ← Back to Categories
                 </Button>
-                <ChatInterface category={activeCategory!} userId={user.id} initialContext={healthContext} />
+                <WellnessSurvey onComplete={(answers) => {
+                  const context = `Here is my mental wellness profile:\n- **Primary Concern**: ${answers.primary_concern}\n- **Stress Level**: ${answers.stress_level}\n- **Sleep Quality**: ${answers.sleep_quality}\n- **Physical Activity**: ${answers.physical_activity}\n- **Social Support**: ${answers.social_support}\n- **Mental Health History**: ${answers.mental_health_history}\n- **Current Coping Methods**: ${answers.coping_methods}\n- **Wellness Goal**: ${answers.wellness_goal}\n\nBased on this profile, please create a personalized mental wellness plan. Include daily routines, coping strategies, mindfulness exercises, and actionable steps in a structured format with tables.`;
+                  setWellnessContext(context);
+                  setWellnessSurveyDone(true);
+                }} />
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="outline" 
+                  onClick={() => { setActiveCategory(null); setHealthSurveyDone(false); setHealthContext(undefined); setWellnessSurveyDone(false); setWellnessContext(undefined); }}
+                  className="mb-6"
+                >
+                  ← Back to Categories
+                </Button>
+                <ChatInterface 
+                  category={activeCategory!} 
+                  userId={user.id} 
+                  initialContext={activeCategory === "health" ? healthContext : activeCategory === "wellness" ? wellnessContext : undefined} 
+                />
               </>
             )}
           </div>
