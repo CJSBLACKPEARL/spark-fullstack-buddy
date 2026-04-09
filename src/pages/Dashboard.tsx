@@ -21,6 +21,8 @@ const Dashboard = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [healthSurveyDone, setHealthSurveyDone] = useState(false);
   const [healthContext, setHealthContext] = useState<string | undefined>(undefined);
+  const [wellnessSurveyDone, setWellnessSurveyDone] = useState(false);
+  const [wellnessContext, setWellnessContext] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
